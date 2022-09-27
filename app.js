@@ -1,27 +1,36 @@
 const express = require('express')
-const cors = require('cors')
 const app = express()
+const cors = require('cors')
+const Todo = require('./models/todo')
+const { tryConnect } = require('./connect/connect')
 app.use(express.json())
 app.use(cors())
 
-let TODOS = []
+tryConnect().catch()
 
 app.get('/api/todos', (request, response) => {
-    response.status(200).json(TODOS)
+    Todo.find((error, result) => {
+        response.send(result)
+    })
 })
 
-app.post('/api/todos/', (request, response) => {
-    const todo = {
+app.post('/api/todos/',  (request, response) => {
+    Todo ({
         ...request.body,
         completed: false
-    }
-    TODOS.push(todo)
-    response.status(201).json(TODOS)
+    }).save().then(() => {
+        Todo.find((error, result) => {
+            response.send(result)
+        })
+    })
 })
 
-app.delete('/api/todos/:id', (request, response) => {
-    TODOS = TODOS.filter(todo => todo.id !== +request.params.id)
-    response.status(200).json(TODOS)
+app.delete('/api/todos/:_id', (request, response) => {
+    Todo.deleteOne({ _id: request.params._id }).then(() => {
+        Todo.find((error, result) => {
+            response.send(result)
+        })
+    })
 })
 
 app.listen(2000,() => console.log('Server started...'))
